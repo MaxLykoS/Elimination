@@ -29,13 +29,17 @@ public enum QTNodeType
 
 public class Bound
 {
-    public Vector2 Pos { get; set; }
-    public Vector2 Rect { get; set; }
+    public float X;
+    public float Y;
+    public float Width;
+    public float Height;
 
-    public Bound(Vector2 pos, Vector2 rect)
+    public Bound(float x, float y, float w,float h)
     {
-        this.Pos = pos;
-        this.Rect = rect;
+        X = x;
+        Y = y;
+        Width = w;
+        Height = h;
     }
 }
 
@@ -112,17 +116,21 @@ public class QNode
                 _intersectionTimes += _biRB ? 1 : 0; 
                 _intersectionTimes += _biLB ? 1 : 0;
                 #endregion
-                if (_intersectionTimes >= 2) // 该物体穿过多个子网格
+                #region 该物体穿过多个子节点
+                if (_intersectionTimes >= 2) 
                 {
                     _Rootlist.Add(obj);
                 }
-                else if(_intersectionTimes==1)                       //  完全在某个子节点内
+                #endregion
+                #region 完全在某个子节点内
+                else if (_intersectionTimes==1)
                 {
                     if (_biLT) _LTlist.Add(obj);
                     if (_biRT) _RTlist.Add(obj);
                     if (_biRB) _RBlist.Add(obj);
                     if (_biLB) _LBlist.Add(obj);
                 }
+                #endregion
                 else
                     throw new Exception("正在检测父节点外的物体");
             }
@@ -131,7 +139,7 @@ public class QNode
 
         if (_totalCnt <= BelongedTree.MaxObjCnt || Depth >= BelongedTree.MaxDepth)
         {
-            #region 直接放入父节点
+            #region 直接全部放入父节点
             foreach (Obj obj in _LTlist)
             {
                 ObjList.Add(obj);
@@ -166,24 +174,28 @@ public class QNode
         }
         else
         {
+            #region 根节点物体放入根节点，子节点物体继续向下递归
             foreach (Obj obj in _Rootlist)
             {
                 ObjList.Add(obj);
                 obj.isLoaded = true;
                 obj.BelongedNode = this;
             }
-            ChildList.Add(new QNode(_LTlist,GenLT(),depth + 1, this, BelongedTree, QTNodeType.LT));
-            ChildList.Add(new QNode(_RTlist,GenRT(),depth + 1, this, BelongedTree, QTNodeType.RT));
-            ChildList.Add(new QNode(_RBlist,GenRB(),depth + 1, this, BelongedTree, QTNodeType.RB));
-            ChildList.Add(new QNode(_LBlist,GenLB(),depth + 1, this, BelongedTree, QTNodeType.LB));
+            if (_RBlist.Count() != 0)
+                ChildList.Add(new QNode(_RBlist, GenRB(), depth + 1, this, BelongedTree, QTNodeType.RB));
+            if (_LTlist.Count()!=0)
+                ChildList.Add(new QNode(_LTlist,GenLT(),depth + 1, this, BelongedTree, QTNodeType.LT));
+            if (_RTlist.Count() != 0)
+                ChildList.Add(new QNode(_RTlist,GenRT(),depth + 1, this, BelongedTree, QTNodeType.RT));
+            if (_LBlist.Count() != 0)
+                ChildList.Add(new QNode(_LBlist,GenLB(),depth + 1, this, BelongedTree, QTNodeType.LB));
+            #endregion
         }
     }
-
     public void InsertObj(Obj obj)
     {
 
     }
-
     public void RenderNode()
     {
         foreach (QNode node in ChildList)
@@ -191,14 +203,12 @@ public class QNode
             node.RenderNode();
         }
 
-        Gizmos.DrawWireCube(new Vector3(Bound.Pos.x, 0, Bound.Pos.y), new Vector3(Bound.Rect.x, 0, Bound.Rect.y));
+        Gizmos.DrawWireCube(new Vector3(Bound.X, 0, Bound.Y), new Vector3(Bound.Width,0, Bound.Height));
     }
-
     public void RenderNodeHighLight()
     {
-        Gizmos.DrawSphere(new Vector3(Bound.Pos.x, 0, Bound.Pos.y), Bound.Rect.x /2);
+        Gizmos.DrawWireSphere(new Vector3(Bound.X, 0, Bound.Y), Bound.Height/2);
     }
-
     public void SearchNode(Bound b)
     {
         if (Depth == BelongedTree.MaxDepth || ObjList.Count() <= BelongedTree.MaxObjCnt)
@@ -218,101 +228,58 @@ public class QNode
 
     }
 
-    public Bound GenLT()
+    private Bound GenLT()
     {
-        return new Bound(new Vector2(Bound.Pos.x - Bound.Rect.x / 4, Bound.Pos.y + Bound.Rect.y / 4),new Vector2(Bound.Rect.x / 2, Bound.Rect.y / 2));
+        return new Bound(Bound.X - Bound.Width / 4, Bound.Y + Bound.Height / 4, Bound.Width / 2, Bound.Height / 2);
     }
-    public Bound GenRT()
+    private Bound GenRT()
     {
-        return new Bound(new Vector2(Bound.Pos.x + Bound.Rect.x / 4, Bound.Pos.y + Bound.Rect.y / 4), new Vector2(Bound.Rect.x / 2, Bound.Rect.y / 2));
+        return new Bound(Bound.X + Bound.Width / 4, Bound.Y + Bound.Height / 4, Bound.Width / 2, Bound.Height / 2);
     }
-    public Bound GenRB()
+    private Bound GenRB()
     {
-        return new Bound(new Vector2(Bound.Pos.x + Bound.Rect.x / 4, Bound.Pos.y - Bound.Rect.y / 4), new Vector2(Bound.Rect.x / 2, Bound.Rect.y / 2));
+        return new Bound(Bound.X + Bound.Width / 4, Bound.Y - Bound.Height/ 4, Bound.Width / 2, Bound.Height / 2);
     }
-    public Bound GenLB()
+    private Bound GenLB()
     {
-        return new Bound(new Vector2(Bound.Pos.x - Bound.Rect.x / 4, Bound.Pos.y - Bound.Rect.y / 4), new Vector2(Bound.Rect.x / 2, Bound.Rect.y / 2));
+        return new Bound(Bound.X - Bound.Width / 4, Bound.Y - Bound.Height / 4, Bound.Width / 2, Bound.Height / 2);
     }
-
     private bool CheckIntersection(Bound b,QTNodeType type)
     {
-        Bound _bound;
+        Bound _nb;
         switch (type)
         {
-            case QTNodeType.LT: _bound = GenLT(); break;
-            case QTNodeType.RT: _bound = GenRT(); break;
-            case QTNodeType.RB: _bound = GenRB(); break;
-            case QTNodeType.LB: _bound = GenLB(); break;
+            case QTNodeType.LT: _nb = GenLT(); break;
+            case QTNodeType.RT: _nb = GenRT(); break;
+            case QTNodeType.RB: _nb = GenRB(); break;
+            case QTNodeType.LB: _nb = GenLB(); break;
             default: throw new NotImplementedException("未指定的QTNodeType");
         }
-        float[] rec1 = {
-            b.Pos.x - b.Rect.x / 2,
-            b.Pos.y - b.Rect.y / 2,
-            b.Pos.x + b.Rect.x / 2,
-            b.Pos.y + b.Rect.y / 2,
-        };
-        float[] rec2 = {
-            _bound.Pos.x - _bound.Rect.x / 2,
-            _bound.Pos.y - _bound.Rect.y / 2,
-            _bound.Pos.x + _bound.Rect.x / 2,
-            _bound.Pos.y + _bound.Rect.y / 2,
-        };
-
+        float[] rec1 = {b.X - b.Width / 2,b.Y - b.Height / 2,b.X + b.Width / 2,b.Y + b.Height / 2,};
+        float[] rec2 = {_nb.X - _nb.Width / 2,_nb.Y - _nb.Height / 2,_nb.X + _nb.Width / 2,_nb.Y + _nb.Height / 2,};
         return !(rec1[2] <= rec2[0] || rec2[2] <= rec1[0] || rec1[3] <= rec2[1] || rec2[3] <= rec1[1]);
     }
-
-    private bool CheckInside(Bound b, QTNodeType type)
-    {
-        Bound _bound;
-        switch (type)
-        {
-            case QTNodeType.LT: _bound = GenLT(); break;
-            case QTNodeType.RT: _bound = GenRT(); break;
-            case QTNodeType.RB: _bound = GenRB(); break;
-            case QTNodeType.LB: _bound = GenLB(); break;
-            default: throw new NotImplementedException("未指定的QTNodeType");
-        }
-        float x_1 = b.Pos.x, x_2 = _bound.Pos.x;
-        float y_1 = b.Pos.y, y_2 = _bound.Pos.y;
-        float width_1 = b.Rect.x, width_2 = _bound.Rect.x;
-        float height_1 = b.Rect.y, height_2 = _bound.Rect.y;
-
-        float maxx1 = x_1 + width_1, maxx2 = x_2 + width_2;
-        float minx1 = x_1 - width_1, minx2 = x_2 - width_2;
-        float maxy1 = y_1 + height_1, maxy2 = y_2 + height_2;
-        float miny1 = y_1 - height_1, miny2 = y_2 - height_2;
-        bool totallyInside = !(maxx1 >= maxx2 && minx1 <= minx2 && maxy1 >= maxy2 && miny1 <= miny2);
-        return totallyInside;
-    }
-
     private bool CheckPointInside(Bound b, QTNodeType type)
     {
-        if (type == QTNodeType.Root)
+        switch (type)
         {
-            return (b.Pos.x <= Bound.Pos.x + Bound.Rect.x / 2) && (b.Pos.x >= Bound.Pos.x - Bound.Rect.x / 2) &&
-                (b.Pos.y <= Bound.Pos.y + Bound.Rect.y / 2) && (b.Pos.y >= Bound.Pos.y - Bound.Rect.y / 2);
+            case QTNodeType.Root:
+                return (b.X <= Bound.X + Bound.Width / 2) && (b.X >= Bound.X - Bound.Width / 2) &&
+                       (b.Y <= Bound.Y + Bound.Height / 2) && (b.Y >= Bound.Y - Bound.Height / 2);
+            case QTNodeType.LB:
+                return (b.X <= Bound.X) && (b.X >= Bound.X - Bound.Width / 2) &&
+                       (b.Y <= Bound.Y) && (b.Y >= Bound.Y - Bound.Height / 2);
+            case QTNodeType.LT:
+                return (b.X <= Bound.X) && (b.X >= Bound.X - Bound.Width / 2) &&
+                       (b.Y <= Bound.Y + Bound.Height / 2) && (b.Y >= Bound.Y);
+            case QTNodeType.RB:
+                return (b.X <= Bound.X + Bound.Width / 2) && (b.X >= Bound.X) &&
+                       (b.Y <= Bound.Y) && (b.Y >= Bound.Y - Bound.Height / 2);
+            case QTNodeType.RT:
+                return (b.X <= Bound.X + Bound.Width / 2) && (b.X >= Bound.X) &&
+                       (b.Y <= Bound.Y + Bound.Height / 2) && (b.Y >= Bound.Y);
+            default: throw new NotImplementedException("未指定的QTNodeType");
+
         }
-        else if (type == QTNodeType.LB)
-        {
-            return (b.Pos.x <= Bound.Pos.x) && (b.Pos.x >= Bound.Pos.x - Bound.Rect.x / 2) &&
-                (b.Pos.y <= Bound.Pos.y) && (b.Pos.y >= Bound.Pos.y - Bound.Rect.y / 2);
-        }
-        else if (type == QTNodeType.LT)
-        {
-            return (b.Pos.x <= Bound.Pos.x) && (b.Pos.x >= Bound.Pos.x - Bound.Rect.x / 2) &&
-                (b.Pos.y <= Bound.Pos.y + Bound.Rect.y / 2) && (b.Pos.y >= Bound.Pos.y);
-        }
-        else if (type == QTNodeType.RB)
-        {
-            return (b.Pos.x <= Bound.Pos.x + Bound.Rect.x / 2) && (b.Pos.x >= Bound.Pos.x) &&
-                (b.Pos.y <= Bound.Pos.y) && (b.Pos.y >= Bound.Pos.y - Bound.Rect.y / 2);
-        }
-        else if (type == QTNodeType.RT)
-        {
-            return (b.Pos.x <= Bound.Pos.x + Bound.Rect.x / 2) && (b.Pos.x >= Bound.Pos.x) &&
-                (b.Pos.y <= Bound.Pos.y + Bound.Rect.y / 2) && (b.Pos.y >= Bound.Pos.y);
-        }
-        throw new NotImplementedException("未指定的QTNodeType");
     }
 }

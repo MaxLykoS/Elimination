@@ -19,4 +19,13 @@ public class Obj: MonoBehaviour
         BelongedNode = null;
         isHighLight = false;
     }
+
+    public void Init()
+    {
+        this.Go = gameObject;
+        this.Bound = new Bound(Go.transform.position.x,Go.transform.position.z,Go.transform.localScale.x,Go.transform.localScale.z);
+        isLoaded = false;
+        BelongedNode = null;
+        isHighLight = false;
+    }
 }
