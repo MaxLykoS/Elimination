@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Jobs.LowLevel.Unsafe;
 using UnityEngine;
 
 public class MainEntrance : MonoBehaviour
@@ -12,6 +13,8 @@ public class MainEntrance : MonoBehaviour
     public Vector2 BoxHeightRange;
     public int BoxCnt;
 
+    private Obj Player;
+
     public bool FixedInput;
 
     private QTree QTree;
@@ -19,7 +22,7 @@ public class MainEntrance : MonoBehaviour
     public void Start()
     {
         list = FixedInput?LoadBoxes():GenerateBoxs();
-
+        Player = GeneratePlayer();
         QTree = new QTree(
             list,
             new Bound(0, 0,XSize, YSize),
@@ -59,19 +62,47 @@ public class MainEntrance : MonoBehaviour
         return _list;
     }
 
+    private Obj GeneratePlayer()
+    {
+        GameObject _collidorCubePrefab = Resources.Load<GameObject>("Prefabs/Cube");
+        GameObject _go = Instantiate<GameObject>(_collidorCubePrefab, new Vector3(0, 0, 0), Quaternion.identity);
+        _go.transform.localScale = new Vector3(1, 1, 1);
+        Obj _newObj = _go.AddComponent<Obj>();
+        _newObj.Init();
+        return _newObj;
+    }
+
+    public void FixedUpdate()
+    {
+        QTree.SearchNode(Player);
+        foreach (Obj obj in list)
+        {
+            if (obj.HighLightObj)
+            {
+                obj.gameObject.transform.Rotate(new Vector3(1f, 1.0f, 1f));
+                obj.HighLightObj = false;
+            }
+        }
+    }
+
     public void OnDrawGizmos()
     {
         if (QTree != null)
         {
             QTree.RenderTree();
         }
-        if (list != null)
-        {
+        if (list != null&&Player!=null)
+        {          
             foreach (Obj obj in list)
             {
-                if (obj.isHighLight)
+                if (obj.HighlightNode)
                     obj.BelongedNode.RenderNodeHighLight();
             }
         }
+    }
+
+    public void OnDestroy()
+    {
+        list = null;
     }
 }

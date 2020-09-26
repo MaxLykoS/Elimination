@@ -59,20 +59,13 @@ public class QTree
         Bound = bound;
         Root = new QNode(objList,Bound, 0,Root, this,QTNodeType.Root);
     }
-
-    public void InsertObj(Obj obj)
-    {
-        Root.InsertObj(obj);
-    }
-
     public void RenderTree()
     {
         Root.RenderNode();
     }
-
-    public void SearchNode(Bound b)
+    public void SearchNode(Obj obj)
     {
-        Root.SearchNode(b);
+        Root.SearchNode(obj.Bound);
     }
 }
 
@@ -192,10 +185,6 @@ public class QNode
             #endregion
         }
     }
-    public void InsertObj(Obj obj)
-    {
-
-    }
     public void RenderNode()
     {
         foreach (QNode node in ChildList)
@@ -211,21 +200,22 @@ public class QNode
     }
     public void SearchNode(Bound b)
     {
-        if (Depth == BelongedTree.MaxDepth || ObjList.Count() <= BelongedTree.MaxObjCnt)
+        if (ObjList.Count() != 0&&CheckPointInside(b,QTNodeType.Root))
         {
-            // 在当前节点
+            // 检查每次递归遇到的节点内的物体（非叶子节点内为交叉物体，叶子节点内为非交叉物体）
+            // 在这里检查碰撞
+            foreach (Obj obj in ObjList)
+                obj.HighLightObj = true;
         }
-        else
+        // 找不到就从最可能的子节点入手继续递归的找
+        foreach (QNode qNode in ChildList)
         {
-            for (int i = 0; i < 4; i++)
+            if (CheckPointInside(b, qNode.Type))
             {
-                //if (CheckInside(b, BelongedTree.TYPES[i]))
-                {
-
-                }
+                qNode.SearchNode(b);
+                return;
             }
         }
-
     }
 
     private Bound GenLT()
@@ -264,22 +254,23 @@ public class QNode
         switch (type)
         {
             case QTNodeType.Root:
-                return (b.X <= Bound.X + Bound.Width / 2) && (b.X >= Bound.X - Bound.Width / 2) &&
-                       (b.Y <= Bound.Y + Bound.Height / 2) && (b.Y >= Bound.Y - Bound.Height / 2);
+                return (b.X < Bound.X + Bound.Width / 2) && (b.X > Bound.X - Bound.Width / 2) &&
+                       (b.Y < Bound.Y + Bound.Height / 2) && (b.Y > Bound.Y - Bound.Height / 2);
             case QTNodeType.LB:
-                return (b.X <= Bound.X) && (b.X >= Bound.X - Bound.Width / 2) &&
-                       (b.Y <= Bound.Y) && (b.Y >= Bound.Y - Bound.Height / 2);
+                return (b.X < Bound.X) && (b.X > Bound.X - Bound.Width / 2) &&
+                       (b.Y < Bound.Y) && (b.Y > Bound.Y - Bound.Height / 2);
             case QTNodeType.LT:
-                return (b.X <= Bound.X) && (b.X >= Bound.X - Bound.Width / 2) &&
-                       (b.Y <= Bound.Y + Bound.Height / 2) && (b.Y >= Bound.Y);
+                return (b.X < Bound.X) && (b.X > Bound.X - Bound.Width / 2) &&
+                       (b.Y < Bound.Y + Bound.Height / 2) && (b.Y > Bound.Y);
             case QTNodeType.RB:
-                return (b.X <= Bound.X + Bound.Width / 2) && (b.X >= Bound.X) &&
-                       (b.Y <= Bound.Y) && (b.Y >= Bound.Y - Bound.Height / 2);
+                return (b.X < Bound.X + Bound.Width / 2) && (b.X > Bound.X) &&
+                       (b.Y < Bound.Y) && (b.Y > Bound.Y - Bound.Height / 2);
             case QTNodeType.RT:
-                return (b.X <= Bound.X + Bound.Width / 2) && (b.X >= Bound.X) &&
-                       (b.Y <= Bound.Y + Bound.Height / 2) && (b.Y >= Bound.Y);
+                return (b.X < Bound.X + Bound.Width / 2) && (b.X > Bound.X) &&
+                       (b.Y < Bound.Y + Bound.Height / 2) && (b.Y > Bound.Y);
             default: throw new NotImplementedException("未指定的QTNodeType");
 
         }
     }
+    //private bool ContainObj(Obj)
 }

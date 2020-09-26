@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class Obj: MonoBehaviour
 {
-    public bool isHighLight;
+    public bool HighlightNode;
+    public bool HighLightObj;
     public Bound Bound;
     public bool isLoaded;
     public QNode BelongedNode;
@@ -17,7 +18,7 @@ public class Obj: MonoBehaviour
         this.Go = gameObject;
         isLoaded = false;
         BelongedNode = null;
-        isHighLight = false;
+        HighlightNode = false;
     }
 
     public void Init()
@@ -26,6 +27,12 @@ public class Obj: MonoBehaviour
         this.Bound = new Bound(Go.transform.position.x,Go.transform.position.z,Go.transform.localScale.x,Go.transform.localScale.z);
         isLoaded = false;
         BelongedNode = null;
-        isHighLight = false;
+        HighlightNode = false;
+    }
+
+    public void Update()
+    {
+        Bound.X = gameObject.transform.position.x;
+        Bound.Y = gameObject.transform.position.z;
     }
 }
