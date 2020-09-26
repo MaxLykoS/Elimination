@@ -2,16 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Obj
+public class Obj: MonoBehaviour
 {
+    public bool isHighLight;
     public Bound Bound;
     public bool isLoaded;
+    public QNode BelongedNode;
 
     private GameObject Go;
-    public Obj(GameObject go)
+
+    public void Init(Bound bound)
     {
-        this.Go = go;
+        this.Bound = bound;
+        this.Go = gameObject;
         isLoaded = false;
-        Bound = new Bound(new Vector2(go.transform.position.x, go.transform.position.z), new Vector2(1, 1));
+        BelongedNode = null;
+        isHighLight = false;
     }
 }
