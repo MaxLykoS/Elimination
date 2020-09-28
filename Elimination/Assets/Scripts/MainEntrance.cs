@@ -13,20 +13,29 @@ public class MainEntrance : MonoBehaviour
     public Vector2 BoxHeightRange;
     public int BoxCnt;
 
+    public List<Obj> InsertedObjs;
+
     private Obj Player;
 
     public bool FixedInput;
 
     private QTree QTree;
-    private List<Obj> list;
+    private List<Obj> objList;
     public void Start()
     {
-        list = FixedInput?LoadBoxes():GenerateBoxs();
+        LoadTestObjs();
+        objList = FixedInput ? LoadBoxes() : GenerateBoxs();
         Player = GeneratePlayer();
         QTree = new QTree(
-            list,
-            new Bound(0, 0,XSize, YSize),
+            objList,
+            new Bound(0, 0, XSize, YSize),
             MaxObjCntPerNode, MaxDepth);
+
+        foreach (Obj obj in InsertedObjs)
+        {
+            QTree.InsertObj(obj);
+            objList.Add(obj);
+        }
     }
 
     private List<Obj> GenerateBoxs()
@@ -72,10 +81,18 @@ public class MainEntrance : MonoBehaviour
         return _newObj;
     }
 
+    private void LoadTestObjs()
+    {
+        foreach (Obj obj in InsertedObjs)
+        {
+            obj.Init();
+        }
+    }
+
     public void FixedUpdate()
     {
         QTree.SearchNode(Player);
-        foreach (Obj obj in list)
+        foreach (Obj obj in objList)
         {
             if (obj.HighLightObj)
             {
@@ -91,9 +108,9 @@ public class MainEntrance : MonoBehaviour
         {
             QTree.RenderTree();
         }
-        if (list != null&&Player!=null)
+        if (objList != null&&Player!=null)
         {          
-            foreach (Obj obj in list)
+            foreach (Obj obj in objList)
             {
                 if (obj.HighlightNode)
                     obj.BelongedNode.RenderNodeHighLight();
@@ -103,6 +120,6 @@ public class MainEntrance : MonoBehaviour
 
     public void OnDestroy()
     {
-        list = null;
+        objList = null;
     }
 }

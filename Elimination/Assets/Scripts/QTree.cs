@@ -67,6 +67,10 @@ public class QTree
     {
         Root.SearchNode(obj.Bound);
     }
+    public void InsertObj(Obj obj)
+    {
+        Root.InsertNode(obj);
+    }
 }
 
 public class QNode
@@ -94,6 +98,7 @@ public class QNode
         List<Obj> _RBlist = new List<Obj>();
         List<Obj> _LBlist = new List<Obj>();
         List<Obj> _Rootlist = new List<Obj>();
+        //List<List<Obj>> _AllLists = new List<List<Obj>> { _LTlist, _RTlist, _RBlist, _LBlist, _Rootlist };
         foreach (Obj obj in intersectionObjs)
         {
             if (obj.isLoaded == false)
@@ -174,23 +179,39 @@ public class QNode
                 obj.isLoaded = true;
                 obj.BelongedNode = this;
             }
+            #region 递归创建四个节点
             if (_RBlist.Count() != 0)
                 ChildList.Add(new QNode(_RBlist, GenRB(), depth + 1, this, BelongedTree, QTNodeType.RB));
+
             if (_LTlist.Count()!=0)
                 ChildList.Add(new QNode(_LTlist,GenLT(),depth + 1, this, BelongedTree, QTNodeType.LT));
+
             if (_RTlist.Count() != 0)
                 ChildList.Add(new QNode(_RTlist,GenRT(),depth + 1, this, BelongedTree, QTNodeType.RT));
+
             if (_LBlist.Count() != 0)
                 ChildList.Add(new QNode(_LBlist,GenLB(),depth + 1, this, BelongedTree, QTNodeType.LB));
             #endregion
+            #endregion
         }
+    }
+
+    public QNode(Bound bound, int depth, QNode father, QTree qTree, QTNodeType type)
+    {
+        this.Bound = bound;
+        this.Depth = depth;
+        this.Father = father;
+        this.BelongedTree = qTree;
+        this.Type = type;
+        ObjList = new List<Obj>();
+        ChildList = new List<QNode>();
     }
     public void RenderNode()
     {
-        foreach (QNode node in ChildList)
-        {
-            node.RenderNode();
-        }
+            foreach (QNode node in ChildList)
+            {
+                node.RenderNode();
+            }
 
         Gizmos.DrawWireCube(new Vector3(Bound.X, 0, Bound.Y), new Vector3(Bound.Width,0, Bound.Height));
     }
@@ -217,7 +238,59 @@ public class QNode
             }
         }
     }
-
+    public void InsertNode(Obj obj)
+    {
+        // 遇到最大深度的叶子，直接添加，不再递归
+        if (Depth == BelongedTree.MaxDepth)
+        {
+            ObjList.Add(obj);
+            return;
+        }
+        #region 检测与节点的几个子节点相交
+        List<bool> _bList = new List<bool>
+        {
+            CheckIntersection(obj.Bound, QTNodeType.LT),
+            CheckIntersection(obj.Bound, QTNodeType.RT),
+            CheckIntersection(obj.Bound, QTNodeType.RB),
+            CheckIntersection(obj.Bound, QTNodeType.LB)
+        };
+        int _intersectionTimes = 0;
+        foreach (bool b in _bList)
+            _intersectionTimes += b ? 1 : 0;
+        if (_intersectionTimes >= 2)  //要添加的物体与多个子节点相交
+        {
+            //  直接加入父节点
+            ObjList.Add(obj);
+            obj.BelongedNode = this;
+            return;
+        }
+        else if (_intersectionTimes == 1)  // 在子节点的位置内
+        {
+            QNode _node;
+            for (int i = 0; i < 4; i++)
+            {
+                if (_bList[i])
+                {
+                    QTNodeType _type = (QTNodeType)i;
+                    _node = GetNode((QTNodeType)i);
+                    if (_node == null)
+                    {
+                        _node = new QNode(GenBound(_type), Depth + 1, this, BelongedTree, _type);
+                        ChildList.Add(_node);
+                        _node.ObjList.Add(obj);
+                        obj.isLoaded = true;
+                    }
+                    else
+                    {
+                        _node.InsertNode(obj);
+                    }
+                }
+            }
+        }
+        else
+            throw new Exception("该物体不在树的范围内");
+        #endregion
+    }
     private Bound GenLT()
     {
         return new Bound(Bound.X - Bound.Width / 4, Bound.Y + Bound.Height / 4, Bound.Width / 2, Bound.Height / 2);
@@ -233,6 +306,17 @@ public class QNode
     private Bound GenLB()
     {
         return new Bound(Bound.X - Bound.Width / 4, Bound.Y - Bound.Height / 4, Bound.Width / 2, Bound.Height / 2);
+    }
+    private Bound GenBound(QTNodeType type)
+    {
+        switch (type)
+        {
+            case QTNodeType.LT:return GenLT();
+            case QTNodeType.RT:return GenRT();
+            case QTNodeType.RB:return GenRB();
+            case QTNodeType.LB:return GenLB();
+            default:throw new Exception("不支持的type类型");
+        }
     }
     private bool CheckIntersection(Bound b,QTNodeType type)
     {
@@ -272,5 +356,15 @@ public class QNode
 
         }
     }
-    //private bool ContainObj(Obj)
+    private QNode GetNode(QTNodeType type)
+    {
+        foreach (QNode node in ChildList)
+        {
+            if (node.Type == type)
+            {
+                return node;
+            }
+        }
+        return null;
+    }
 }
