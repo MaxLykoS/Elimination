@@ -9,11 +9,13 @@ public class Obj: MonoBehaviour
     public Bound Bound;
     public bool isLoaded;
     public QNode BelongedNode;
+    public bool isMoving;
 
     private GameObject Go;
 
     public void Init(Bound bound)
     {
+        isMoving = false;
         this.Bound = bound;
         this.Go = gameObject;
         isLoaded = false;
@@ -23,6 +25,7 @@ public class Obj: MonoBehaviour
 
     public void Init()
     {
+        isMoving = false;
         this.Go = gameObject;
         this.Bound = new Bound(Go.transform.position.x,Go.transform.position.z,Go.transform.localScale.x,Go.transform.localScale.z);
         isLoaded = false;

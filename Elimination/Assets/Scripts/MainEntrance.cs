@@ -12,29 +12,30 @@ public class MainEntrance : MonoBehaviour
     public Vector2 BoxWidthRange;
     public Vector2 BoxHeightRange;
     public int BoxCnt;
-
-    public List<Obj> InsertedObjs;
-
-    private Obj Player;
-
     public bool FixedInput;
-
-    private QTree QTree;
+   
+    private List<Obj> insertedObjs;
+    private QTree qTree;
     private List<Obj> objList;
+    private List<Obj> movingObj;
+    private Obj Player;
     public void Start()
     {
-        LoadTestObjs();
+        movingObj = new List<Obj>();
         objList = FixedInput ? LoadBoxes() : GenerateBoxs();
         Player = GeneratePlayer();
-        QTree = new QTree(
+        qTree = new QTree(
             objList,
             new Bound(0, 0, XSize, YSize),
             MaxObjCntPerNode, MaxDepth);
 
-        foreach (Obj obj in InsertedObjs)
+        insertedObjs = LoadInsertedObjs();
+        foreach (Obj obj in insertedObjs)
         {
-            QTree.InsertObj(obj);
+            obj.Init();
+            qTree.InsertObj(obj);
             objList.Add(obj);
+            //qTree.DeleteObj(obj);
         }
     }
 
@@ -71,6 +72,18 @@ public class MainEntrance : MonoBehaviour
         return _list;
     }
 
+    private List<Obj> LoadInsertedObjs()
+    {
+        List<Obj> _insertedObjs = new List<Obj>();
+        GameObject root = GameObject.Find("InsertedObjs");
+        foreach(Obj obj in root.transform.GetComponentsInChildren<Obj>())
+        {
+            obj.Init();
+            _insertedObjs.Add(obj);
+        }
+        return _insertedObjs;
+    }
+
     private Obj GeneratePlayer()
     {
         GameObject _collidorCubePrefab = Resources.Load<GameObject>("Prefabs/Cube");
@@ -81,17 +94,15 @@ public class MainEntrance : MonoBehaviour
         return _newObj;
     }
 
-    private void LoadTestObjs()
-    {
-        foreach (Obj obj in InsertedObjs)
-        {
-            obj.Init();
-        }
-    }
-
     public void FixedUpdate()
     {
-        QTree.SearchNode(Player);
+        foreach (Obj obj in objList)
+        {
+            qTree.UpdateObj(obj);
+        }
+
+        qTree.SearchNode(Player);
+
         foreach (Obj obj in objList)
         {
             if (obj.HighLightObj)
@@ -102,11 +113,14 @@ public class MainEntrance : MonoBehaviour
         }
     }
 
+    public static int RenderedNodeCnt = 0;
     public void OnDrawGizmos()
     {
-        if (QTree != null)
+        if (qTree != null)
         {
-            QTree.RenderTree();
+            RenderedNodeCnt = 0;
+            qTree.RenderTree();
+            Debug.Log(RenderedNodeCnt);
         }
         if (objList != null&&Player!=null)
         {          

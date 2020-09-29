@@ -69,7 +69,17 @@ public class QTree
     }
     public void InsertObj(Obj obj)
     {
-        Root.InsertNode(obj);
+        Root.InsertObj(obj);
+    }
+    public void DeleteObj(Obj obj)
+    {
+        obj.BelongedNode.DeleteObj(obj);
+    }
+    public void UpdateObj(Obj obj)
+    {
+        // 删除后重新插入
+        DeleteObj(obj);
+        InsertObj(obj);
     }
 }
 
@@ -98,21 +108,22 @@ public class QNode
         List<Obj> _RBlist = new List<Obj>();
         List<Obj> _LBlist = new List<Obj>();
         List<Obj> _Rootlist = new List<Obj>();
-        //List<List<Obj>> _AllLists = new List<List<Obj>> { _LTlist, _RTlist, _RBlist, _LBlist, _Rootlist };
+        List<List<Obj>> _AllLists = new List<List<Obj>> { _LTlist, _RTlist, _RBlist, _LBlist, _Rootlist };
         foreach (Obj obj in intersectionObjs)
         {
             if (obj.isLoaded == false)
             {
                 #region 检测物体与几个子节点相交
-                bool _biLT = CheckIntersection(obj.Bound, QTNodeType.LT);
-                bool _biRT = CheckIntersection(obj.Bound, QTNodeType.RT);
-                bool _biRB = CheckIntersection(obj.Bound, QTNodeType.RB);
-                bool _biLB = CheckIntersection(obj.Bound, QTNodeType.LB);
+                List<bool> _blist = new List<bool>
+                {
+                    CheckIntersection(obj.Bound, QTNodeType.LT),
+                    CheckIntersection(obj.Bound, QTNodeType.RT),
+                    CheckIntersection(obj.Bound, QTNodeType.RB),
+                    CheckIntersection(obj.Bound, QTNodeType.LB)
+                };
                 int _intersectionTimes = 0;
-                _intersectionTimes += _biLT ? 1 : 0; 
-                _intersectionTimes += _biRT ? 1 : 0; 
-                _intersectionTimes += _biRB ? 1 : 0; 
-                _intersectionTimes += _biLB ? 1 : 0;
+                foreach (bool b in _blist)
+                    _intersectionTimes += b ? 1 : 0;
                 #endregion
                 #region 该物体穿过多个子节点
                 if (_intersectionTimes >= 2) 
@@ -123,51 +134,30 @@ public class QNode
                 #region 完全在某个子节点内
                 else if (_intersectionTimes==1)
                 {
-                    if (_biLT) _LTlist.Add(obj);
-                    if (_biRT) _RTlist.Add(obj);
-                    if (_biRB) _RBlist.Add(obj);
-                    if (_biLB) _LBlist.Add(obj);
+                    for (int i = 0; i < 4; i++)
+                        if (_blist[i])
+                        {
+                            _AllLists[i].Add(obj);
+                            break;
+                        }
                 }
                 #endregion
                 else
                     throw new Exception("正在检测父节点外的物体");
             }
         }
-        int _totalCnt = _LTlist.Count() + _RTlist.Count() + _RBlist.Count() + _LBlist.Count() + _Rootlist.Count();
+        int _totalCnt = 0;
+        foreach (List<Obj> list in _AllLists)
+            _totalCnt += list.Count();
 
         if (_totalCnt <= BelongedTree.MaxObjCnt || Depth >= BelongedTree.MaxDepth)
         {
             #region 直接全部放入父节点
-            foreach (Obj obj in _LTlist)
-            {
-                ObjList.Add(obj);
-                obj.isLoaded = true;
-                obj.BelongedNode = this;
-            }
-            foreach (Obj obj in _RTlist)
-            {
-                ObjList.Add(obj);
-                obj.isLoaded = true;
-                obj.BelongedNode = this;
-            }
-            foreach (Obj obj in _RBlist)
-            {
-                ObjList.Add(obj);
-                obj.isLoaded = true;
-                obj.BelongedNode = this;
-            }
-            foreach (Obj obj in _LBlist)
-            {
-                ObjList.Add(obj);
-                obj.isLoaded = true;
-                obj.BelongedNode = this;
-            }
-            foreach (Obj obj in _Rootlist)
-            {
-                ObjList.Add(obj);
-                obj.isLoaded = true;
-                obj.BelongedNode = this;
-            }
+            foreach (List<Obj> list in _AllLists)
+                foreach (Obj obj in list)
+                {
+                    AddObj(obj);
+                }
             #endregion
         }
         else
@@ -175,27 +165,22 @@ public class QNode
             #region 根节点物体放入根节点，子节点物体继续向下递归
             foreach (Obj obj in _Rootlist)
             {
-                ObjList.Add(obj);
-                obj.isLoaded = true;
-                obj.BelongedNode = this;
+                AddObj(obj);
             }
             #region 递归创建四个节点
-            if (_RBlist.Count() != 0)
-                ChildList.Add(new QNode(_RBlist, GenRB(), depth + 1, this, BelongedTree, QTNodeType.RB));
 
-            if (_LTlist.Count()!=0)
-                ChildList.Add(new QNode(_LTlist,GenLT(),depth + 1, this, BelongedTree, QTNodeType.LT));
-
-            if (_RTlist.Count() != 0)
-                ChildList.Add(new QNode(_RTlist,GenRT(),depth + 1, this, BelongedTree, QTNodeType.RT));
-
-            if (_LBlist.Count() != 0)
-                ChildList.Add(new QNode(_LBlist,GenLB(),depth + 1, this, BelongedTree, QTNodeType.LB));
+            for (int i = 0; i < 4; i++)
+            {
+                if (_AllLists[i].Count() != 0)
+                {
+                    QTNodeType _type = (QTNodeType)i;
+                    ChildList.Add(new QNode(_AllLists[i], GenBound(_type), depth + 1, this, BelongedTree, _type));
+                }
+            }
             #endregion
             #endregion
         }
     }
-
     public QNode(Bound bound, int depth, QNode father, QTree qTree, QTNodeType type)
     {
         this.Bound = bound;
@@ -214,6 +199,7 @@ public class QNode
             }
 
         Gizmos.DrawWireCube(new Vector3(Bound.X, 0, Bound.Y), new Vector3(Bound.Width,0, Bound.Height));
+        MainEntrance.RenderedNodeCnt++;
     }
     public void RenderNodeHighLight()
     {
@@ -238,12 +224,12 @@ public class QNode
             }
         }
     }
-    public void InsertNode(Obj obj)
+    public void InsertObj(Obj obj)
     {
         // 遇到最大深度的叶子，直接添加，不再递归
         if (Depth == BelongedTree.MaxDepth)
         {
-            ObjList.Add(obj);
+            AddObj(obj);
             return;
         }
         #region 检测与节点的几个子节点相交
@@ -260,8 +246,7 @@ public class QNode
         if (_intersectionTimes >= 2)  //要添加的物体与多个子节点相交
         {
             //  直接加入父节点
-            ObjList.Add(obj);
-            obj.BelongedNode = this;
+            AddObj(obj);
             return;
         }
         else if (_intersectionTimes == 1)  // 在子节点的位置内
@@ -277,12 +262,11 @@ public class QNode
                     {
                         _node = new QNode(GenBound(_type), Depth + 1, this, BelongedTree, _type);
                         ChildList.Add(_node);
-                        _node.ObjList.Add(obj);
-                        obj.isLoaded = true;
+                        _node.AddObj(obj);
                     }
                     else
                     {
-                        _node.InsertNode(obj);
+                        _node.InsertObj(obj);
                     }
                 }
             }
@@ -290,6 +274,18 @@ public class QNode
         else
             throw new Exception("该物体不在树的范围内");
         #endregion
+    }
+    public void DeleteObj(Obj obj)
+    {
+        ObjList.Remove(obj);
+        QNode qNode = this;
+        // 该节点无物体且无叶子，即删除
+        while (qNode.ObjList.Count() == 0 && qNode.ChildList.Count() == 0)
+        {
+            QNode _deleteNode = qNode;
+            qNode = qNode.Father;
+            _deleteNode.Father.ChildList.Remove(_deleteNode);
+        }
     }
     private Bound GenLT()
     {
@@ -366,5 +362,12 @@ public class QNode
             }
         }
         return null;
+    }
+
+    private void AddObj(Obj obj)
+    {
+        ObjList.Add(obj);
+        obj.isLoaded = true;
+        obj.BelongedNode = this;
     }
 }
