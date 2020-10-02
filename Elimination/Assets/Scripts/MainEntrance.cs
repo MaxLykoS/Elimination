@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class MainEntrance : MonoBehaviour
 {
+    public static int RenderedNodeCnt = 0;
+
     public int MaxObjCntPerNode;
     public int MaxDepth;
     public int XSize;
@@ -14,29 +16,24 @@ public class MainEntrance : MonoBehaviour
     public int BoxCnt;
     public bool FixedInput;
    
-    private List<Obj> insertedObjs;
     private QTree qTree;
     private List<Obj> objList;
-    private List<Obj> movingObj;
-    private Obj Player;
+    private Player Player;
     public void Start()
     {
-        movingObj = new List<Obj>();
         objList = FixedInput ? LoadBoxes() : GenerateBoxs();
         Player = GeneratePlayer();
-        qTree = new QTree(
-            objList,
-            new Bound(0, 0, XSize, YSize),
-            MaxObjCntPerNode, MaxDepth);
-
-        insertedObjs = LoadInsertedObjs();
+        //objList.Add(Player);
+        qTree = new QTree(objList, new Bound(0, 0, XSize, YSize), MaxObjCntPerNode, MaxDepth);
+        #region 插入物体测试代码
+        /*insertedObjs = LoadInsertedObjs();
         foreach (Obj obj in insertedObjs)
         {
             obj.Init();
             qTree.InsertObj(obj);
             objList.Add(obj);
-            //qTree.DeleteObj(obj);
-        }
+        }*/
+        #endregion
     }
 
     private List<Obj> GenerateBoxs()
@@ -72,36 +69,26 @@ public class MainEntrance : MonoBehaviour
         return _list;
     }
 
-    private List<Obj> LoadInsertedObjs()
+    private Player GeneratePlayer()
     {
-        List<Obj> _insertedObjs = new List<Obj>();
-        GameObject root = GameObject.Find("InsertedObjs");
-        foreach(Obj obj in root.transform.GetComponentsInChildren<Obj>())
-        {
-            obj.Init();
-            _insertedObjs.Add(obj);
-        }
-        return _insertedObjs;
-    }
-
-    private Obj GeneratePlayer()
-    {
-        GameObject _collidorCubePrefab = Resources.Load<GameObject>("Prefabs/Cube");
+        GameObject _collidorCubePrefab = Resources.Load<GameObject>("Prefabs/Player");
         GameObject _go = Instantiate<GameObject>(_collidorCubePrefab, new Vector3(0, 0, 0), Quaternion.identity);
         _go.transform.localScale = new Vector3(1, 1, 1);
-        Obj _newObj = _go.AddComponent<Obj>();
+        Player _newObj = _go.AddComponent<Player>();
         _newObj.Init();
         return _newObj;
     }
 
     public void FixedUpdate()
     {
+        Bullet.BulletsUpdate(qTree);
+
         foreach (Obj obj in objList)
         {
             qTree.UpdateObj(obj);
         }
 
-        qTree.SearchNode(Player);
+        //qTree.SearchNode(Player);
 
         foreach (Obj obj in objList)
         {
@@ -113,7 +100,11 @@ public class MainEntrance : MonoBehaviour
         }
     }
 
-    public static int RenderedNodeCnt = 0;
+    private void Update()
+    {
+        Obj.UpdateBound();
+        Player.PlayerUpdate();
+    }
     public void OnDrawGizmos()
     {
         if (qTree != null)
@@ -132,8 +123,15 @@ public class MainEntrance : MonoBehaviour
         }
     }
 
-    public void OnDestroy()
+    /*private List<Obj> LoadInsertedObjs()
     {
-        objList = null;
-    }
+        List<Obj> _insertedObjs = new List<Obj>();
+        GameObject root = GameObject.Find("InsertedObjs");
+        foreach (Obj obj in root.transform.GetComponentsInChildren<Obj>())
+        {
+            obj.Init();
+            _insertedObjs.Add(obj);
+        }
+        return _insertedObjs;
+    }*/
 }
