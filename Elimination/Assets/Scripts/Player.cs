@@ -9,13 +9,13 @@ public class Player : Obj
 
     private float curFireTimer;
     private GameObject bulletPrefab;
-    public override void Init()
+
+    public Player(GameObject go):base(go)
     {
-        base.Init();
         FireRate = 0.1f;
         BulletSpeed = 1.0f;
         curFireTimer = 0;
-        bulletPrefab = Resources.Load<GameObject>("Prefabs/Cube");
+        bulletPrefab = Resources.Load<GameObject>("Prefabs/Bullet");
     }
 
     public void PlayerUpdate()
@@ -39,9 +39,8 @@ public class Player : Obj
 
     private void SpawnBullet(Vector3 direction, float speed)
     {
-        Bullet _b = Instantiate(bulletPrefab, transform.position + direction*2, Quaternion.identity).AddComponent<Bullet>();
-        _b.Init(direction,speed);
-        _b.Go.name = "Bullet";
+        GameObject _go = GameObject.Instantiate(bulletPrefab, Go.transform.position + direction*2, Quaternion.identity);
+        Bullet _bullet = new Bullet(_go, direction, speed);
     }
 
     private Vector3 GetFireDirection()

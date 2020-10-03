@@ -34,16 +34,15 @@ public class Bullet : Obj
             }
         }
     }
-    
-    public void Init(Vector3 direction, float speed)
+
+    public Bullet(GameObject go, Vector3 direction, float speed) : base(go)
     {
-        base.Init();
         bulletNode = Bullets.AddLast(this);
         this.Direction = direction;
         this.Speed = speed;
         destroySelfOT = 5.0f;
     }
-
+    
     public override void DestroySelf()
     {
         Bullets.Remove(bulletNode);
@@ -52,6 +51,6 @@ public class Bullet : Obj
 
     public void Move()
     {
-        transform.position += Direction.normalized * Speed;
+        Go.transform.position += Direction.normalized * Speed;
     }
 }

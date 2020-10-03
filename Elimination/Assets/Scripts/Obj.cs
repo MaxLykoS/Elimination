@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Playables;
 using UnityEngine;
 
-public class Obj: MonoBehaviour
+public class Obj
 {
     private static LinkedList<Obj> ObjLinkedList = new LinkedList<Obj>();
 
@@ -13,7 +14,6 @@ public class Obj: MonoBehaviour
     public QNode BelongedNode;
     public bool isMoving;
 
-    private bool isInit;
     public GameObject Go;
     private LinkedListNode<Obj> linkedListNode;
 
@@ -21,24 +21,26 @@ public class Obj: MonoBehaviour
     {
         foreach (Obj obj in ObjLinkedList)
         {
-            if (!obj.CheckInit())
-                throw new System.Exception("Obj没有初始化！");
             obj.UpdateBoundPosition();
         }
     }
 
-    public virtual void Init(Bound bound)
+    public Obj(GameObject go)
     {
-        Init();
-        this.Bound = bound;
+        isMoving = false;
+        this.Go = go;
+        this.Bound = new Bound(Go.transform.position.x, Go.transform.position.z, Go.transform.localScale.x, Go.transform.localScale.z);
+        isLoaded = false;
+        BelongedNode = null;
+        HighlightNode = false;
+        linkedListNode = ObjLinkedList.AddLast(this);
     }
 
-    public virtual void Init()
+    public Obj(GameObject go, Bound b)
     {
-        isInit = true;
         isMoving = false;
-        this.Go = gameObject;
-        this.Bound = new Bound(Go.transform.position.x,Go.transform.position.z,Go.transform.localScale.x,Go.transform.localScale.z);
+        this.Go = go;
+        this.Bound = b;
         isLoaded = false;
         BelongedNode = null;
         HighlightNode = false;
@@ -47,18 +49,13 @@ public class Obj: MonoBehaviour
 
     public void UpdateBoundPosition()
     {
-        Bound.X = gameObject.transform.position.x;
-        Bound.Y = gameObject.transform.position.z;
-    }
-
-    public bool CheckInit()
-    {
-        return isInit;
+        Bound.X = Go.transform.position.x;
+        Bound.Y = Go.transform.position.z;
     }
 
     public virtual void DestroySelf()
     {
         ObjLinkedList.Remove(linkedListNode);
-        Destroy(Go);
+        Object.Destroy(Go);
     }
 }

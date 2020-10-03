@@ -19,6 +19,11 @@ public class MainEntrance : MonoBehaviour
     private QTree qTree;
     private List<Obj> objList;
     private Player Player;
+
+    public static void Destroy(GameObject go)
+    {
+        Destroy(go);
+    }
     public void Start()
     {
         objList = FixedInput ? LoadBoxes() : GenerateBoxs();
@@ -54,8 +59,7 @@ public class MainEntrance : MonoBehaviour
 
             GameObject _go = Instantiate<GameObject>(_collidorCubePrefab, new Vector3(_newX, 0, _newY), Quaternion.identity, _goRoot.transform);
             _go.transform.localScale = new Vector3(_newWidth, 1, _newHeight);
-            Obj _newObj = _go.AddComponent<Obj>();
-            _newObj.Init(new Bound(_newX, _newY, _newWidth, _newHeight));
+            Obj _newObj = new Obj(_go, new Bound(_newX, _newY, _newWidth, _newHeight));
             _objList.Add(_newObj);  
         }
         return _objList;
@@ -63,9 +67,10 @@ public class MainEntrance : MonoBehaviour
 
     private List<Obj> LoadBoxes()
     {
-        List<Obj> _list = new List<Obj>(GameObject.Find("Fixed").transform.GetComponentsInChildren<Obj>());
-        foreach (Obj obj in _list)
-            obj.Init();
+        GameObject[] _gos = GameObject.Find("Fixed").GetComponentsInChildren<GameObject>();
+        List<Obj> _list = new List<Obj>();
+        foreach (GameObject _go in _gos)
+            _list.Add(new Obj(_go));
         return _list;
     }
 
@@ -74,9 +79,8 @@ public class MainEntrance : MonoBehaviour
         GameObject _collidorCubePrefab = Resources.Load<GameObject>("Prefabs/Player");
         GameObject _go = Instantiate<GameObject>(_collidorCubePrefab, new Vector3(0, 0, 0), Quaternion.identity);
         _go.transform.localScale = new Vector3(1, 1, 1);
-        Player _newObj = _go.AddComponent<Player>();
-        _newObj.Init();
-        return _newObj;
+        Player _newPlayer = new Player(_go);
+        return _newPlayer;
     }
 
     public void FixedUpdate()
@@ -94,7 +98,7 @@ public class MainEntrance : MonoBehaviour
         {
             if (obj.HighLightObj)
             {
-                obj.gameObject.transform.Rotate(new Vector3(1f, 1.0f, 1f));
+                obj.Go.transform.Rotate(new Vector3(1f, 1.0f, 1f));
                 obj.HighLightObj = false;
             }
         }
