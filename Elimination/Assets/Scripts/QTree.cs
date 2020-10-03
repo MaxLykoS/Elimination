@@ -41,6 +41,13 @@ public class Bound
         Width = w;
         Height = h;
     }
+
+    public static bool CheckCollision(Bound b1, Bound b2)
+    {
+        float[] rec1 = { b1.X - b1.Width / 2, b1.Y - b1.Height / 2, b1.X + b1.Width / 2, b1.Y + b1.Height / 2, };
+        float[] rec2 = { b2.X - b2.Width / 2, b2.Y - b2.Height / 2, b2.X + b2.Width / 2, b2.Y + b2.Height / 2, };
+        return !(rec1[2] <= rec2[0] || rec2[2] <= rec1[0] || rec1[3] <= rec2[1] || rec2[3] <= rec1[1]);
+    }
 }
 
 public class QTree
@@ -65,7 +72,7 @@ public class QTree
     }
     public void SearchNode(Obj obj)
     {
-        Root.SearchNode(obj.Bound);
+        Root.SearchNode(obj);
     }
     public void InsertObj(Obj obj)
     {
@@ -193,33 +200,36 @@ public class QNode
     }
     public void RenderNode()
     {
-            foreach (QNode node in ChildList)
-            {
-                node.RenderNode();
-            }
+        foreach (QNode node in ChildList)
+        {
+            node.RenderNode();
+        }
 
         Gizmos.DrawWireCube(new Vector3(Bound.X, 0, Bound.Y), new Vector3(Bound.Width,0, Bound.Height));
-        MainEntrance.RenderedNodeCnt++;
     }
-    public void RenderNodeHighLight()
+    public void SearchNode(Obj obj)
     {
-        Gizmos.DrawWireSphere(new Vector3(Bound.X, 0, Bound.Y), Bound.Height/2);
-    }
-    public void SearchNode(Bound b)
-    {
-        if (ObjList.Count() != 0&&CheckPointInside(b,QTNodeType.Root))
+        if (ObjList.Count() != 0 && CheckPointInside(obj.Bound, QTNodeType.Root))
         {
             // 检查每次递归遇到的节点内的物体（非叶子节点内为交叉物体，叶子节点内为非交叉物体）
             // 在这里检查碰撞
-            foreach (Obj obj in ObjList)
-                obj.HighLightObj = true;
+            for (int i = 0;i<ObjList.Count;i++)
+            {
+                ObjList[i].HighLightObj = true;
+                if (Bound.CheckCollision(obj.Bound, ObjList[i].Bound))
+                {
+                    ObjList[i].DestroySelf();
+                    obj.DestroySelf();
+                    return;
+                }
+            }
         }
         // 找不到就从最可能的子节点入手继续递归的找
         foreach (QNode qNode in ChildList)
         {
-            if (CheckPointInside(b, qNode.Type))
+            if (CheckPointInside(obj.Bound, qNode.Type))
             {
-                qNode.SearchNode(b);
+                qNode.SearchNode(obj);
                 return;
             }
         }
@@ -277,6 +287,7 @@ public class QNode
     }
     public void DeleteObj(Obj obj)
     {
+        obj.BelongedNode = null;
         ObjList.Remove(obj);
         QNode qNode = this;
         // 该节点无物体且无叶子，即删除

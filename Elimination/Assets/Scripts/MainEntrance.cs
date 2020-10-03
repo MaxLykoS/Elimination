@@ -5,8 +5,6 @@ using UnityEngine;
 
 public class MainEntrance : MonoBehaviour
 {
-    public static int RenderedNodeCnt = 0;
-
     public int MaxObjCntPerNode;
     public int MaxDepth;
     public int XSize;
@@ -17,28 +15,13 @@ public class MainEntrance : MonoBehaviour
     public bool FixedInput;
    
     private QTree qTree;
-    private List<Obj> objList;
     private Player Player;
 
-    public static void Destroy(GameObject go)
-    {
-        Destroy(go);
-    }
     public void Start()
     {
-        objList = FixedInput ? LoadBoxes() : GenerateBoxs();
         Player = GeneratePlayer();
-        //objList.Add(Player);
-        qTree = new QTree(objList, new Bound(0, 0, XSize, YSize), MaxObjCntPerNode, MaxDepth);
-        #region 插入物体测试代码
-        /*insertedObjs = LoadInsertedObjs();
-        foreach (Obj obj in insertedObjs)
-        {
-            obj.Init();
-            qTree.InsertObj(obj);
-            objList.Add(obj);
-        }*/
-        #endregion
+        qTree = new QTree(FixedInput ? LoadBoxes() : GenerateBoxs(), new Bound(0, 0, XSize, YSize), MaxObjCntPerNode, MaxDepth);
+        //qTree.InsertObj(Player);
     }
 
     private List<Obj> GenerateBoxs()
@@ -87,21 +70,7 @@ public class MainEntrance : MonoBehaviour
     {
         Bullet.BulletsUpdate(qTree);
 
-        foreach (Obj obj in objList)
-        {
-            qTree.UpdateObj(obj);
-        }
-
-        //qTree.SearchNode(Player);
-
-        foreach (Obj obj in objList)
-        {
-            if (obj.HighLightObj)
-            {
-                obj.Go.transform.Rotate(new Vector3(1f, 1.0f, 1f));
-                obj.HighLightObj = false;
-            }
-        }
+        Obj.FixedUpdateObj(qTree);
     }
 
     private void Update()
@@ -113,29 +82,7 @@ public class MainEntrance : MonoBehaviour
     {
         if (qTree != null)
         {
-            RenderedNodeCnt = 0;
             qTree.RenderTree();
-            Debug.Log(RenderedNodeCnt);
-        }
-        if (objList != null&&Player!=null)
-        {          
-            foreach (Obj obj in objList)
-            {
-                if (obj.HighlightNode)
-                    obj.BelongedNode.RenderNodeHighLight();
-            }
         }
     }
-
-    /*private List<Obj> LoadInsertedObjs()
-    {
-        List<Obj> _insertedObjs = new List<Obj>();
-        GameObject root = GameObject.Find("InsertedObjs");
-        foreach (Obj obj in root.transform.GetComponentsInChildren<Obj>())
-        {
-            obj.Init();
-            _insertedObjs.Add(obj);
-        }
-        return _insertedObjs;
-    }*/
 }

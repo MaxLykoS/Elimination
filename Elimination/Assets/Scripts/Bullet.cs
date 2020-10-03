@@ -37,6 +37,7 @@ public class Bullet : Obj
 
     public Bullet(GameObject go, Vector3 direction, float speed) : base(go)
     {
+        Type = ObjType.Bullet;
         bulletNode = Bullets.AddLast(this);
         this.Direction = direction;
         this.Speed = speed;

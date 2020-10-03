@@ -12,6 +12,7 @@ public class Player : Obj
 
     public Player(GameObject go):base(go)
     {
+        Type = ObjType.Player;
         FireRate = 0.1f;
         BulletSpeed = 1.0f;
         curFireTimer = 0;
