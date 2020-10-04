@@ -50,10 +50,10 @@ public class MainEntrance : MonoBehaviour
 
     private List<Obstacle> LoadBoxes()
     {
-        GameObject[] _gos = GameObject.Find("Fixed").GetComponentsInChildren<GameObject>();
+        Transform[] _trs = GameObject.Find("Fixed").GetComponentsInChildren<Transform>();
         List<Obstacle> _list = new List<Obstacle>();
-        foreach (GameObject _go in _gos)
-            _list.Add(new Obstacle(_go));
+        for(int i = 1;i<_trs.Length;i++)
+            _list.Add(new Obstacle(_trs[i].gameObject));
         return _list;
     }
 
@@ -69,7 +69,6 @@ public class MainEntrance : MonoBehaviour
     public void FixedUpdate()
     {
         Bullet.BulletsUpdate(qTree);
-
         Obstacle.FixedUpdateObs(qTree);
     }
 
@@ -83,6 +82,8 @@ public class MainEntrance : MonoBehaviour
         if (qTree != null)
         {
             qTree.RenderTree();
+
+            //Obstacle.OnDrawGizmosObstacle();
         }
     }
 }

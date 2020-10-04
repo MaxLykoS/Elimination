@@ -92,13 +92,13 @@ public class QTree
 
 public class QNode
 {
-    public QTNodeType Type;
-    public QTree BelongedTree;
-    public Bound Bound;
-    public int Depth;
-    public List<Obstacle> ObjList;
-    public QNode Father;
-    public List<QNode> ChildList;
+    private QTNodeType Type;
+    private QTree BelongedTree;
+    private Bound Bound;
+    private int Depth;
+    private List<Obstacle> ObjList;
+    private QNode Father;
+    private List<QNode> ChildList;
 
     public QNode(List<Obstacle> intersectionObjs, Bound bound, int depth, QNode father, QTree qTree, QTNodeType type)
     {
@@ -169,7 +169,7 @@ public class QNode
         }
         else
         {
-            #region 根节点物体放入根节点，子节点物体继续向下递归
+            #region 父节点物体放入根节点，子节点物体继续向下递归
             foreach (Obstacle obj in _Rootlist)
             {
                 AddObj(obj);
@@ -237,7 +237,7 @@ public class QNode
     public void InsertObj(Obstacle obj)
     {
         // 遇到最大深度的叶子，直接添加，不再递归
-        if (Depth == BelongedTree.MaxDepth)
+        if (Depth == BelongedTree.MaxDepth||ObjList.Count()<BelongedTree.MaxObjCnt)
         {
             AddObj(obj);
             return;
@@ -297,6 +297,14 @@ public class QNode
             qNode = qNode.Father;
             _deleteNode.Father.ChildList.Remove(_deleteNode);
         }
+    }
+    public Vector2 GetPos()
+    {
+        return new Vector3(Bound.X,Bound.Y);
+    }
+    public Vector2 GetSize()
+    {
+        return new Vector2(Bound.Width, Bound.Height);
     }
     private Bound GenLT()
     {
@@ -374,7 +382,6 @@ public class QNode
         }
         return null;
     }
-
     private void AddObj(Obstacle obj)
     {
         ObjList.Add(obj);
