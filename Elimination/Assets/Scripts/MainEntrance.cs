@@ -24,9 +24,9 @@ public class MainEntrance : MonoBehaviour
         //qTree.InsertObj(Player);
     }
 
-    private List<Obj> GenerateBoxs()
+    private List<Obstacle> GenerateBoxs()
     {
-        List<Obj> _objList = new List<Obj>();
+        List<Obstacle> _obsList = new List<Obstacle>();
         GameObject _collidorCubePrefab = Resources.Load<GameObject>("Prefabs/Cube");
         int _minX = 0 - XSize / 2;
         int _maxX = 0 + XSize / 2;
@@ -42,18 +42,18 @@ public class MainEntrance : MonoBehaviour
 
             GameObject _go = Instantiate<GameObject>(_collidorCubePrefab, new Vector3(_newX, 0, _newY), Quaternion.identity, _goRoot.transform);
             _go.transform.localScale = new Vector3(_newWidth, 1, _newHeight);
-            Obj _newObj = new Obj(_go, new Bound(_newX, _newY, _newWidth, _newHeight));
-            _objList.Add(_newObj);  
+            Obstacle _newObj = new Obstacle(_go, new Bound(_newX, _newY, _newWidth, _newHeight));
+            _obsList.Add(_newObj);  
         }
-        return _objList;
+        return _obsList;
     }
 
-    private List<Obj> LoadBoxes()
+    private List<Obstacle> LoadBoxes()
     {
         GameObject[] _gos = GameObject.Find("Fixed").GetComponentsInChildren<GameObject>();
-        List<Obj> _list = new List<Obj>();
+        List<Obstacle> _list = new List<Obstacle>();
         foreach (GameObject _go in _gos)
-            _list.Add(new Obj(_go));
+            _list.Add(new Obstacle(_go));
         return _list;
     }
 
@@ -70,7 +70,7 @@ public class MainEntrance : MonoBehaviour
     {
         Bullet.BulletsUpdate(qTree);
 
-        Obj.FixedUpdateObj(qTree);
+        Obstacle.FixedUpdateObs(qTree);
     }
 
     private void Update()
