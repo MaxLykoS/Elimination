@@ -11,16 +11,16 @@ public class ServerTcp
 	//  主定时器
 	System.Timers.Timer timer = new System.Timers.Timer(1000);  //  1秒执行一次
 	//  心跳时间
-	public static readonly long hearBeatTime = 180;
+	public static readonly long hearBeatTime = 6;
 
-	private MessageDispatch dispatch;
+	private SeverMessageDispatch dispatch;
 	private ConnsPool connsPool;
 	private Socket serverSocket;
 
 	public ServerTcp()
 	{
 		connsPool = new ConnsPool();
-		dispatch = new MessageDispatch();
+		dispatch = new SeverMessageDispatch();
 	}
 	
 	public void StartServer()

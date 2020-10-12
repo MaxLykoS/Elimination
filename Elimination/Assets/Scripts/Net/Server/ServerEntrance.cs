@@ -11,4 +11,9 @@ public class ServerEntrance : MonoBehaviour
         ServerTcp = new ServerTcp();
         ServerTcp.StartServer();
     }
+
+    void OnApplicationQuit()
+    {
+        ServerTcp.ShutDown();
+    }
 }

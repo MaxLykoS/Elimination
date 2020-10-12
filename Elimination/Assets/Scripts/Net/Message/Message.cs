@@ -25,12 +25,20 @@ public class HeartBeatMessage : CommonMessage
 
 public class LoginMessage : CommonMessage
 {
+    public enum LoginStatus 
+    {
+        Attempt,
+        Success,
+    }
     public string Name;
-    public string Words;
-    public LoginMessage(string name, string words) : base()
+    public string Pwd;
+    public LoginStatus Status;
+    
+    public LoginMessage(string name, string pwd) : base()
     {
         Name = name;
-        Words = words;
+        Pwd = pwd;
+        Status = LoginStatus.Attempt;
     }
 }
 
