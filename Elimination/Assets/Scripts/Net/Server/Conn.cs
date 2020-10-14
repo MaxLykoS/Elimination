@@ -27,6 +27,8 @@ public class Conn
     //  在连接池中的下标
     public int index;
 
+    public ServerPlayer Player;
+
     public Conn(int index)
     {
         readBuff = new byte[BUFFER_SIZE];
@@ -112,5 +114,6 @@ public class Conn
         //  0 1 2 3 4 5 6
         int nextLen = bufferCount - msgLength - sizeof(Int32);
         Array.Copy(readBuff, sizeof(Int32) + msgLength, readBuff, 0, nextLen);
-        bufferCount = nextLen;    }
+        bufferCount = nextLen;    
+    }
 }

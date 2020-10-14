@@ -5,18 +5,16 @@ using UnityEngine;
 
 public class ConnsPool
 {
-    public static readonly int MAX_CONN_SIZE = 1024;
-    private Conn[] conns;
+    public static readonly int MAX_CONN_SIZE = 10;
+    private Conn[] conns = new Conn[MAX_CONN_SIZE];
 
-    private Queue<int> freeIndexs;
+    private Queue<int> freeIndexs = new Queue<int>();
 
     public ConnsPool()
     {
-        conns = new Conn[MAX_CONN_SIZE];
         for (int i = 0; i < conns.Length; i++)
             conns[i] = new Conn(i);
 
-        freeIndexs = new Queue<int>();
         for (int i = 0; i < MAX_CONN_SIZE; i++)
             freeIndexs.Enqueue(i);
     }
@@ -30,9 +28,9 @@ public class ConnsPool
     {
         if (freeIndexs.Count == 0)
             return null;
-        int freeIndex = freeIndexs.Dequeue();
-        conns[freeIndex].Init(socket);
-        return conns[freeIndex];
+        Conn yielded = conns[freeIndexs.Dequeue()];
+        yielded.Init(socket);
+        return yielded;
     }
 
     public void CloseAll()
@@ -55,7 +53,6 @@ public class ConnsPool
         for (int i = 0; i < conns.Length; i++)
         {
             Conn conn = conns[i];
-            if (conn == null) continue;
             if (!conn.isUse) continue;
 
             if (conn.lastTickTime < timeNow - ServerTcp.hearBeatTime)

@@ -25,28 +25,44 @@ public class HeartBeatMessage : CommonMessage
 
 public class LoginMessage : CommonMessage
 {
-    public enum LoginStatus 
-    {
-        Attempt,
-        Success,
-    }
     public string Name;
     public string Pwd;
-    public LoginStatus Status;
     
     public LoginMessage(string name, string pwd) : base()
     {
         Name = name;
         Pwd = pwd;
-        Status = LoginStatus.Attempt;
+    }
+}
+
+public class LoginFeedbackMessage : CommonMessage
+{
+    public enum LoginStatus
+    {
+        Failed,
+        Success,
+    }
+    public string IP;
+    public string Port;
+    public LoginStatus Status;
+    public LoginFeedbackMessage(string ip, string port, LoginStatus status) : base()
+    {
+        IP = ip;
+        Port = port;
+        Status = status;
     }
 }
 
 public class MatchMessage : CommonMessage
 {
-    public string GameID;
-    public MatchMessage(string id) : base()
+    public int RandsSeed;
+    public MatchMessage() : base()
     {
-        GameID = id;
+        
+    }
+
+    public MatchMessage(int seed) : base()
+    {
+        RandsSeed = seed;
     }
 }

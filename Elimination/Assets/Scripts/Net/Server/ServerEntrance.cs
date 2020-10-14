@@ -5,15 +5,19 @@ using UnityEngine;
 
 public class ServerEntrance : MonoBehaviour
 {
-    public ServerTcp ServerTcp;
+    public ServerTcp ServerTcp = new ServerTcp();
     void Start()
     {
-        ServerTcp = new ServerTcp();
         ServerTcp.StartServer();
     }
 
     void OnApplicationQuit()
     {
         ServerTcp.ShutDown();
+    }
+
+    void Update()
+    {
+        MatchMgr.Instance.DoForAction();
     }
 }

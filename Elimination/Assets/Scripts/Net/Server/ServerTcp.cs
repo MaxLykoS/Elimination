@@ -13,14 +13,13 @@ public class ServerTcp
 	//  心跳时间
 	public static readonly long hearBeatTime = 6;
 
-	private SeverMessageDispatch dispatch;
-	private ConnsPool connsPool;
+	private ServerMessageDispatch dispatch = new ServerMessageDispatch();
+	private ConnsPool connsPool = new ConnsPool();
 	private Socket serverSocket;
 
 	public ServerTcp()
 	{
-		connsPool = new ConnsPool();
-		dispatch = new SeverMessageDispatch();
+
 	}
 	
 	public void StartServer()

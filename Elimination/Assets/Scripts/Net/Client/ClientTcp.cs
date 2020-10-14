@@ -24,8 +24,8 @@ public class ClientTcp
     private Int32 msgLength = 0;
     private byte[] lenBytes = new byte[sizeof(Int32)];
 
-    //  协议
-    public Protocol proto;
+    //  协议，用来接收服务器的信息
+    public Protocol proto = new Protocol();
 
     //  消息分发
     private ClientMessageDispatch dispatch = new ClientMessageDispatch();
@@ -128,7 +128,7 @@ public class ClientTcp
         return Send(protocol, className, cb);
     }
 
-    private bool Send(Protocol protocol, string className, ClientMessageDispatch.ListenDelegate cb)
+    public bool Send(Protocol protocol, string className, ClientMessageDispatch.ListenDelegate cb)
     {
         if (status != Status.Connected)
             return false;
