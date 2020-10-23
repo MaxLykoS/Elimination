@@ -11,14 +11,14 @@ public class ServerMessageDispatch
 
     public ServerMessageDispatch()
     {
-        dispatchDic.Add(typeof(HeartBeatMessage).ToString(), HeartBeatMessage);
-        dispatchDic.Add(typeof(LoginMessage).ToString(), LoginMessage);
-        dispatchDic.Add(typeof(MatchMessage).ToString(), MatchMessage);
+        dispatchDic.Add(typeof(TcpHeartBeatMessage).ToString(), HeartBeatMessage);
+        dispatchDic.Add(typeof(TcpLoginMessage).ToString(), LoginMessage);
+        dispatchDic.Add(typeof(TcpMatchRequestMessage).ToString(), MatchRequestMessage);
     }
 
     public void Dispatch(Conn conn,Protocol proto)
     {
-        dispatchDic[proto.GetClassName()](conn,proto);
+        dispatchDic[proto.ClassName](conn,proto);
     }
 
     #region 监听数据包
@@ -30,20 +30,22 @@ public class ServerMessageDispatch
 
     private void LoginMessage(Conn conn, Protocol proto)
     {
-        LoginMessage login = proto.Decode<LoginMessage>();
-        Debug.Log("登陆玩家:" + login.Name + " 登录信息:" + login.Pwd);
-        conn.Player = new ServerPlayer(login.Name);
+        TcpLoginMessage login = proto.Decode<TcpLoginMessage>();
+        Debug.Log("登陆玩家:" + login.Name + " 登录信息:" + login.Pwd + "客户端凭证:" + login.Token);
+
+        int _uid = UserMgr.Instance.UserLogin(login.Token, conn.GetAdress());
+
  
-        LoginFeedbackMessage fb = new LoginFeedbackMessage("127.0.0.1", "1235", 
-                                        LoginFeedbackMessage.LoginStatus.Success);
+        TcpLoginFeedbackMessage fb = new TcpLoginFeedbackMessage(_uid, ServerConfig.UDP_RECV_PORT, 
+                                        TcpLoginFeedbackMessage.LoginStatus.Success);
         conn.Send(new Protocol(fb));
     }
 
-    private void MatchMessage(Conn conn, Protocol proto)
+    private void MatchRequestMessage(Conn conn, Protocol proto)
     {
-        MatchMessage mm = proto.Decode<MatchMessage>();
-        Debug.Log("匹配信息");
-        MatchMgr.Instance.AddMatchingPlayer(conn);
+        TcpMatchRequestMessage rm = proto.Decode<TcpMatchRequestMessage>();
+        Debug.Log("服务器收到请求匹配信息");
+        MatchMgr.Instance.AddMatchingPlayer(conn, rm.UID,rm.UID);
     }
     #endregion
 }

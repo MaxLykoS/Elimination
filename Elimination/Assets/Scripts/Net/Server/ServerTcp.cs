@@ -10,8 +10,6 @@ public class ServerTcp
 {
 	//  主定时器
 	System.Timers.Timer timer = new System.Timers.Timer(1000);  //  1秒执行一次
-	//  心跳时间
-	public static readonly long hearBeatTime = 6;
 
 	private ServerMessageDispatch dispatch = new ServerMessageDispatch();
 	private ConnsPool connsPool = new ConnsPool();
@@ -35,7 +33,7 @@ public class ServerTcp
 
 			serverSocket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp);
 
-			serverSocket.Bind(new IPEndPoint(ip, 1234));  //绑定IP地址：端口  
+			serverSocket.Bind(new IPEndPoint(ip, ServerConfig.SERVER_PORT));  //绑定IP地址：端口  
 			serverSocket.Listen(1024);    //设定最多1024个排队连接请求  
 
 			//通过Clientsoket发送数据  

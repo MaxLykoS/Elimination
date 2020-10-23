@@ -35,23 +35,27 @@ namespace UI.Panel
 
         public void OnLoginClick()
         {
-            string host = "127.0.0.1";
-            int port = 1234;
+            string host = ClientGlobal.ServerIP;
+            int port = ClientGlobal.TcpServerPort;
             ClientTcp.Instance.Connect(host, port);
 
             //发送登录申请
-            Protocol protocol = new Protocol(new LoginMessage("MaxLykoS","123456"));
+            Protocol protocol = new Protocol(new TcpLoginMessage("MaxLykoS","123456",SystemInfo.deviceUniqueIdentifier));
 
             Debug.Log("发送消息" + protocol.ToString());
-            ClientTcp.Instance.Send(protocol,typeof(LoginFeedbackMessage).ToString(), OnLoginBack);
+            ClientTcp.Instance.Send(protocol,typeof(TcpLoginFeedbackMessage).ToString(), OnLoginBack);
         }
 
         private void OnLoginBack(Protocol protocol)
         {
-            LoginFeedbackMessage fb = protocol.Decode<LoginFeedbackMessage>();
-            if (fb.Status == LoginFeedbackMessage.LoginStatus.Success)
+            TcpLoginFeedbackMessage fb = protocol.Decode<TcpLoginFeedbackMessage>();
+            if (fb.Status == TcpLoginFeedbackMessage.LoginStatus.Success)
             {
+                ClientGlobal.UID = fb.Uid;
+                ClientGlobal.UdpSendPort = fb.UdpPort;
                 Debug.Log("登录成功" + fb.ToString());
+                PanelMgr.Instance.OpenPanel<MatchPanel>("");
+                Close();
             }
             else
             {

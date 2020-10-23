@@ -10,10 +10,16 @@ public class Protocol
     private CommonMessage common;
     private string json;
 
-    //解码器,将字节流转换为字符串
-    public Protocol(ref byte[] readbuff,int start,int length)
+    public Protocol(ref byte[] readbuff,int start,int length)  // for tcp
     {
         json = Encoding.UTF8.GetString(readbuff, start, length);
+        common = JsonUtility.FromJson<CommonMessage>(json);
+        className = common.className;
+    }
+
+    public Protocol(ref byte[] readbuf)  //  for udp
+    {
+        json = Encoding.UTF8.GetString(readbuf);
         common = JsonUtility.FromJson<CommonMessage>(json);
         className = common.className;
     }
@@ -28,6 +34,12 @@ public class Protocol
     public Protocol()
     { 
         
+    }
+
+    public Protocol(string json)
+    {
+        this.json = json;
+        className = JsonUtility.FromJson<CommonMessage>(json).className;
     }
 
     public CommonMessage GetCommonMsg()
@@ -45,13 +57,13 @@ public class Protocol
         return Encoding.UTF8.GetBytes(json);
     }
 
-    public string GetJson()
+    public string Json
     {
-        return json;
+        get { return json; }
     }
 
-    public string GetClassName()
+    public string ClassName
     {
-        return className;
+        get { return className; }
     }
 }

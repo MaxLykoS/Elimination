@@ -15,6 +15,7 @@ public class ClientEntrance : MonoBehaviour
     void Update()
     {
         client.Update();
+        ClientGlobal.Instance.DoForAction();
     }
 
     private void OnApplicationQuit()

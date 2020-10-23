@@ -55,7 +55,7 @@ public class ConnsPool
             Conn conn = conns[i];
             if (!conn.isUse) continue;
 
-            if (conn.lastTickTime < timeNow - ServerTcp.hearBeatTime)
+            if (conn.lastTickTime < timeNow - ServerConfig.HEART_BEAT_TIME)
             {
                 Debug.Log("[心跳引起断开连接]" + conn.GetAdress());
                 lock (conn)

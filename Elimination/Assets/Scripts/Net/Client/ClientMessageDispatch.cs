@@ -8,7 +8,7 @@ public class ClientMessageDispatch
     public const int NUM_MSG = 15;
 
     //  消息队列
-    public Queue<Protocol> MsgQueue = new Queue<Protocol>();
+    private Queue<Protocol> MsgQueue = new Queue<Protocol>();
 
     //委托类型
     public delegate void ListenDelegate(Protocol proto);
@@ -35,9 +35,14 @@ public class ClientMessageDispatch
         }
     }
 
+    public Queue<Protocol> GetMsgQ()
+    {
+        return MsgQueue;
+    }
+
     public void DispatchMsgEvent(Protocol protocol)
     {
-        string className = protocol.GetClassName();
+        string className = protocol.ClassName;
         Debug.Log("分发消息" + className);
 
         ListenDelegate method;

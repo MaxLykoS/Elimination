@@ -4,17 +4,19 @@ using UnityEngine;
 
 public class BattleMgr
 {
-    private List<BattleRoom> battles = new List<BattleRoom>();
+    private int battleID = 0;
+    private Dictionary<int,BattleRoom> battles = new Dictionary<int, BattleRoom>();
     public BattleMgr()
-    { 
-        
+    {
+
     }
 
-    public void BeginBattle(List<Conn> group)
-    {
-        BattleRoom room = new BattleRoom(group);
-        battles.Add(room);
-        room.Begin();
-        Debug.Log("开始战斗");
+    public void CreateBattle(List<MatchUserInfo> group)
+    { 
+        BattleRoom room = new BattleRoom(battleID,group);
+        battles[battleID] = room;
+        room.CreateBattle();
+        battleID++;
+        Debug.Log("准备战斗:");
     }
 }

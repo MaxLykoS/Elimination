@@ -27,8 +27,6 @@ public class Conn
     //  在连接池中的下标
     public int index;
 
-    public ServerPlayer Player;
-
     public Conn(int index)
     {
         readBuff = new byte[BUFFER_SIZE];
@@ -51,6 +49,13 @@ public class Conn
         if (!isUse)
             return "无法获取地址";
         return socket.RemoteEndPoint.ToString();
+    }
+
+    public string GetIP()
+    {
+        if (!isUse)
+            return "无法获取地址";
+        return socket.RemoteEndPoint.ToString().Split(':')[0];
     }
 
     //  关闭连接

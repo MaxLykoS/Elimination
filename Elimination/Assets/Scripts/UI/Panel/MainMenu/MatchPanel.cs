@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -32,17 +33,35 @@ public class MatchPanel : PanelBase
     public void OnMatchClick()
     {
         //发送登录申请
-        Protocol protocol = new Protocol(new MatchMessage());
+        Protocol protocol = new Protocol(new TcpMatchRequestMessage(ClientGlobal.UID,1));
 
         Debug.Log("发送消息" + protocol.ToString());
-        ClientTcp.Instance.Send(protocol, typeof(MatchMessage).ToString(), OnMatchBack);
+        ClientTcp.Instance.Send(protocol, typeof(TcpEnterBattleMessage).ToString(), OnMatchBack);
+        Debug.Log("进入匹配队列");
+        //  进入匹配队列动画
+        //  ......
+        btnMatch.onClick.RemoveAllListeners();
     }
 
     private void OnMatchBack(Protocol protocol)
     {
-        MatchMessage mm = protocol.Decode<MatchMessage>();
-        Debug.Log("返回匹配信息");
+        TcpEnterBattleMessage mm = protocol.Decode<TcpEnterBattleMessage>();
+        Debug.Log("接收服务器发送的匹配完成信息" + mm.ToString());
+        //  根据服务器发来的匹配信息，进入游戏
+        //  ......
+        ClientGlobal.Instance.AddAction(() =>{
+            EnterBattle(mm);
+        });
     }
 
+    private void EnterBattle(TcpEnterBattleMessage bm)
+    {
+        Debug.Log("进入战场");
+        BattleData.Instance.UpdateBattleInfo(bm.Seed, bm.BattleUserInfos);
+        //  LoadScene 战场场景
+
+        GameObject go = new GameObject("BattleConn");
+        go.AddComponent<BattleConn>();
+    }
     #endregion
 }

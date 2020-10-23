@@ -94,7 +94,7 @@ public class ClientTcp
         Protocol protocol = new Protocol(ref readBuffer, sizeof(Int32), msgLength);
         //Debug.Log("收到消息" + protocol.GetDesc());
 
-        Queue<Protocol> msgQueue = dispatch.MsgQueue;
+        Queue<Protocol> msgQueue = dispatch.GetMsgQ();
         lock (msgQueue)
             msgQueue.Enqueue(protocol);
 
@@ -124,7 +124,7 @@ public class ClientTcp
 
     public bool Send(Protocol protocol, ClientMessageDispatch.ListenDelegate cb)
     {
-        string className = protocol.GetClassName();
+        string className = protocol.ClassName;
         return Send(protocol, className, cb);
     }
 
@@ -159,7 +159,7 @@ public class ClientTcp
         {
             if (Time.time - LastTickTime > HEART_BEAT_TIME)
             {
-                Protocol protocol = new Protocol(new HeartBeatMessage());
+                Protocol protocol = new Protocol(new TcpHeartBeatMessage());
                 Send(protocol);
                 LastTickTime = Time.time;
             }
