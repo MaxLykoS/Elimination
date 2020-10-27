@@ -9,9 +9,12 @@ using UnityEngine;
 
 public class ClientUdp
 {
+    //  返回给游戏的delegate
     public delegate void DelegateReceiveMessage<T>(T message);
-
-    public DelegateReceiveMessage<UdpBattleStartMessage> mes_battle_start { get; set; }
+    
+    public DelegateReceiveMessage<UdpDownFrameOperations> msg_frame_operation { get; set; }
+    public DelegateReceiveMessage<UdpBattleStartMessage> msg_battle_start { get; set; }
+    public DelegateReceiveMessage<UdpDownDeltaFrames> msg_delta_frame { get; set; }
 
     private UdpClient sendClient = null;
     private int localPort;
@@ -73,12 +76,33 @@ public class ClientUdp
     {
         switch (protocol.ClassName)
         {
-            case "UdpBattleStartMessage":
-                Debug.Log("服务器知道了客户端完成了加载");
-                ClientGlobal.Instance.AddAction(() =>
+            case nameof(UdpBattleStartMessage):
                 {
-                    mes_battle_start(protocol.Decode<UdpBattleStartMessage>());
-                });
+                    Debug.Log("服务器知道了客户端完成了加载");
+                    ClientGlobal.Instance.AddAction(() =>
+                    {
+                        msg_battle_start(protocol.Decode<UdpBattleStartMessage>());
+                    });
+                }
+                break;
+            case nameof(UdpDownFrameOperations):
+                {
+                    //Debug.Log("客户端收到服务器转发的帧操作信息");
+                    ClientGlobal.Instance.AddAction(() =>
+                    {
+                        msg_frame_operation(protocol.Decode<UdpDownFrameOperations>());
+                    });
+                }
+                break;
+            case nameof(UdpDownDeltaFrames):
+                {
+                    Debug.Log("客户端根据服务器转发的旧帧信息处理");
+                    UdpDownDeltaFrames msg = protocol.Decode<UdpDownDeltaFrames>();
+                    ClientGlobal.Instance.AddAction(() =>
+                    {
+                        msg_delta_frame(msg);
+                    });
+                }
                 break;
             default:Debug.Log("未查找到udp信息处理函数:" + protocol.ClassName);
                 break;
@@ -105,8 +129,10 @@ public class ClientUdp
         }
     }
 
-    void OnDestroy()
+    public void Destroy()
     {
+        msg_delta_frame = null;
+        msg_frame_operation = null;
         EndClientUdp();
     }
 

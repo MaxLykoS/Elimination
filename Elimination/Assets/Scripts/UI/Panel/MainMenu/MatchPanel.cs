@@ -59,7 +59,6 @@ public class MatchPanel : PanelBase
         Debug.Log("进入战场");
         BattleData.Instance.UpdateBattleInfo(bm.Seed, bm.BattleUserInfos);
         //  LoadScene 战场场景
-
         GameObject go = new GameObject("BattleConn");
         go.AddComponent<BattleConn>();
     }

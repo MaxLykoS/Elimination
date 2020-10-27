@@ -26,4 +26,9 @@ public abstract class Singletion<T> : MonoBehaviour where T : MonoBehaviour
             return instance;
         }
     }
+
+    private void OnDestroy()
+    {
+        instance = null;
+    }
 }

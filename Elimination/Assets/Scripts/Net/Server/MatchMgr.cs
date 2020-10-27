@@ -83,4 +83,10 @@ public class MatchMgr
         list_action.Clear();
         mutex_actionList.ReleaseMutex();
     }
+
+    public void Close()
+    {
+        battleMgr.Close();
+        list_action.Clear();
+    }
 }

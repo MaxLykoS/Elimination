@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.ComponentModel.Design;
 using UnityEngine;
 
 public class BattleMgr
@@ -18,5 +19,13 @@ public class BattleMgr
         room.CreateBattle();
         battleID++;
         Debug.Log("准备战斗:");
+    }
+
+    public void Close()
+    {
+        foreach (var item in battles.Values)
+        {
+            item.Close();
+        }
     }
 }

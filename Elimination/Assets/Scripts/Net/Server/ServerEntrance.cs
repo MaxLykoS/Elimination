@@ -14,6 +14,7 @@ public class ServerEntrance : MonoBehaviour
     void OnApplicationQuit()
     {
         ServerTcp.ShutDown();
+        MatchMgr.Instance.Close();
     }
 
     void Update()

@@ -63,7 +63,7 @@ public class ServerClientUdp
 
     private void CreateSendEndPort(int _port)
     {
-        Debug.Log(clientIP);
+        Debug.Log("udp客户端ip:" + clientIP);
         sendEndPoint = new IPEndPoint(IPAddress.Parse(clientIP), _port);
     }
 
@@ -88,23 +88,23 @@ public class ServerClientUdp
         IPEndPoint endpoint = new IPEndPoint(IPAddress.Parse(clientIP), recvPort);
         while (isRunning)
         {
-            try
+            //try
             {
+                //Debug.Log("接收客户端udp消息");
+                if (sendClient == null)
+                    Debug.Log("sendClient空了");
                 byte[] buf = sendClient.Receive(ref endpoint);
-
                 if (sendEndPoint == null)
                 {
-                    Debug.Log("接收客户端udp消息：" + endpoint.Port);
                     sendPort = endpoint.Port;
                 }
-
                 string message = Encoding.UTF8.GetString(buf);
                 handleMsg(this, new Protocol(message));
             }
-            catch (Exception ex)
+            /*catch (Exception ex)
             {
                 Debug.Log("接收udp信息异常" + ex.Message);
-            }
+            }*/
         }
         Debug.Log("UDP接收线程退出");
     }

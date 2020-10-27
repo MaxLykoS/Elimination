@@ -3,19 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 using System.Reflection;
 using System;
-[Serializable]
-public struct BattleUserInfo
-{
-    public int Uid;
-    public int BattleID;
-    public int RoleID;
-    public BattleUserInfo(int _uid, int _battleID, int _roleID)
-    {
-        Uid = _uid;
-        BattleID = _battleID;
-        RoleID = _roleID;
-    }
-}
 public class CommonMessage
 {
     public string className;
@@ -80,6 +67,19 @@ public class TcpMatchRequestMessage : CommonMessage
 }
 
 [Serializable]
+public struct BattleUserInfo
+{
+    public int Uid;
+    public int BattleID;
+    public int RoleID;
+    public BattleUserInfo(int _uid, int _battleID, int _roleID)
+    {
+        Uid = _uid;
+        BattleID = _battleID;
+        RoleID = _roleID;
+    }
+}
+[Serializable]
 public class TcpEnterBattleMessage : CommonMessage
 {
     public int Seed;
@@ -114,17 +114,70 @@ public class UdpBattleStartMessage : CommonMessage
     }
 }
 
-public class PlayerOperation : CommonMessage
+[Serializable]
+public class PlayerOperation
 {
     public int BattleID;
     public int Move;
     public int OperationID;
-    public int V1;
-    public int V2;
-    public PlayerOperation(int _bid, int _move,int _oid) : base()
+    public string Keyinput;
+    public PlayerOperation()
+    { 
+        
+    }
+}
+
+[Serializable]
+public class AllPlayerOperation
+{
+    public List<PlayerOperation> Operations;
+    public AllPlayerOperation()
+    {
+        Operations = new List<PlayerOperation>();
+    }
+}
+
+[Serializable]
+public class UdpUpPlayerOperation : CommonMessage
+{
+    public int MsgID;
+    public PlayerOperation PlayerOperation;
+    public UdpUpPlayerOperation(int _mid, PlayerOperation _op) : base()
+    {
+        MsgID = _mid;
+        PlayerOperation = _op;
+    }
+}
+
+[Serializable]
+public class UdpDownFrameOperations : CommonMessage
+{
+    public int FrameID;
+    public AllPlayerOperation Ops;
+    public UdpDownFrameOperations() : base()
+    {
+        Ops = new AllPlayerOperation();
+    }
+}
+
+[Serializable]
+public class UdpUpDeltaFrames : CommonMessage
+{
+    public int BattleID;
+    public List<int> Frames;
+    public UdpUpDeltaFrames(int _bid, List<int> _frames) : base()
     {
         BattleID = _bid;
-        Move = _move;
-        OperationID = _oid;
+        Frames = new List<int>();
+        Frames.AddRange(_frames);
+    }
+}
+
+public class UdpDownDeltaFrames : CommonMessage
+{
+    public List<UdpDownFrameOperations> FramesData;
+    public UdpDownDeltaFrames() : base()
+    {
+        FramesData = new List<UdpDownFrameOperations>();
     }
 }
