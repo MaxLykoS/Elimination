@@ -9,6 +9,7 @@ public class ClientEntrance : MonoBehaviour
 
     void Start()
     {
+        DontDestroyOnLoad(gameObject);
         PanelMgr.Instance.OpenPanel<LoginPanel>("");
     }
 

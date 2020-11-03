@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class MatchPanel : PanelBase
@@ -33,7 +34,7 @@ public class MatchPanel : PanelBase
     public void OnMatchClick()
     {
         //发送登录申请
-        Protocol protocol = new Protocol(new TcpMatchRequestMessage(ClientGlobal.UID,1));
+        Protocol protocol = new Protocol(new TcpMatchRequestMessage(ClientGlobal.UID));
 
         Debug.Log("发送消息" + protocol.ToString());
         ClientTcp.Instance.Send(protocol, typeof(TcpEnterBattleMessage).ToString(), OnMatchBack);
@@ -59,8 +60,7 @@ public class MatchPanel : PanelBase
         Debug.Log("进入战场");
         BattleData.Instance.UpdateBattleInfo(bm.Seed, bm.BattleUserInfos);
         //  LoadScene 战场场景
-        GameObject go = new GameObject("BattleConn");
-        go.AddComponent<BattleConn>();
+        SceneManager.LoadSceneAsync(1);
     }
     #endregion
 }

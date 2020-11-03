@@ -58,11 +58,9 @@ public class TcpLoginFeedbackMessage : CommonMessage
 public class TcpMatchRequestMessage : CommonMessage
 {
     public int UID;
-    public int roleID;
-    public TcpMatchRequestMessage(int uid, int roleID) : base()
+    public TcpMatchRequestMessage(int uid) : base()
     {
         UID = uid;
-        this.roleID = roleID;
     }
 }
 
@@ -71,12 +69,10 @@ public struct BattleUserInfo
 {
     public int Uid;
     public int BattleID;
-    public int RoleID;
-    public BattleUserInfo(int _uid, int _battleID, int _roleID)
+    public BattleUserInfo(int _uid, int _battleID)
     {
         Uid = _uid;
         BattleID = _battleID;
-        RoleID = _roleID;
     }
 }
 [Serializable]

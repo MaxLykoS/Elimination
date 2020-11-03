@@ -91,15 +91,16 @@ public class ServerClientUdp
             //try
             {
                 //Debug.Log("接收客户端udp消息");
-                if (sendClient == null)
-                    Debug.Log("sendClient空了");
-                byte[] buf = sendClient.Receive(ref endpoint);
-                if (sendEndPoint == null)
+                if (sendClient.Available > 0)
                 {
-                    sendPort = endpoint.Port;
+                    byte[] buf = sendClient.Receive(ref endpoint);
+                    if (sendEndPoint == null)
+                    {
+                        sendPort = endpoint.Port;
+                    }
+                    string message = Encoding.UTF8.GetString(buf);
+                    handleMsg(this, new Protocol(message));
                 }
-                string message = Encoding.UTF8.GetString(buf);
-                handleMsg(this, new Protocol(message));
             }
             /*catch (Exception ex)
             {

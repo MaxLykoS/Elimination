@@ -17,9 +17,8 @@ public class BattleConn : Singletion<BattleConn>
 
     void Start()
     {
-        GameObject go = GameObject.Find("ClientLogic");
-        roleMgr = go.GetComponent<RoleMgr>();
-        obstacleMgr = go.GetComponent<ObstacleMgr>();
+        roleMgr = gameObject.AddComponent<RoleMgr>();
+        obstacleMgr = gameObject.AddComponent<ObstacleMgr>();
 
         clientUdp = new ClientUdp();
         clientUdp.StartClientUdp();
@@ -90,8 +89,11 @@ public class BattleConn : Singletion<BattleConn>
         AllPlayerOperation _op;
         if (BattleData.Instance.TryGetNextPlayerOp(out _op))
         {
+            Debug.Log(BattleData.Instance.GetFrameDataNum());
             roleMgr.Logic_Operation(_op);
             //  更新逻辑显示
+            roleMgr.Logic_RoleUpdate();
+            obstacleMgr.Logic_ObsUpdate();
 
             BattleData.Instance.RunOpSucces();
         }
@@ -125,5 +127,6 @@ public class BattleConn : Singletion<BattleConn>
     void Update()
     {
         KeyInputMgr.Instance.UpdateInput();
+        roleMgr.View_Update();
     }
 }

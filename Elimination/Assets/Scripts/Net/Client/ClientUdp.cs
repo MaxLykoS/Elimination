@@ -60,9 +60,12 @@ public class ClientUdp
         {
             try
             {
-                byte[] buf = sendClient.Receive(ref endpoint);
-                Protocol protocol = new Protocol(ref buf);
-                HandleMsg(protocol);
+                if (sendClient.Available > 0)
+                {
+                    byte[] buf = sendClient.Receive(ref endpoint);
+                    Protocol protocol = new Protocol(ref buf);
+                    HandleMsg(protocol);
+                }
             }
             catch (System.Exception ex)
             {

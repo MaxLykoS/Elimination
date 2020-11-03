@@ -8,6 +8,7 @@ public class ServerEntrance : MonoBehaviour
     public ServerTcp ServerTcp = new ServerTcp();
     void Start()
     {
+        DontDestroyOnLoad(gameObject);
         ServerTcp.StartServer();
     }
 

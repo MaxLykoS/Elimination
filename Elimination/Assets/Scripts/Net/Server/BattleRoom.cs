@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class BattleRoom
 {
-    private int battleID;
+    private int battleID;   // BattleRoom在Battles内的ID
     private List<MatchUserInfo> group;
     private Dictionary<int, int> dic_battleUserUid;
     private Dictionary<int, ServerClientUdp> dic_udp;
@@ -52,7 +52,7 @@ public class BattleRoom
                 dic_udp[userBattleID] = clientUdp;
                 dic_battleReady[userBattleID] = false;
 
-                BattleUserInfo _bUser = new BattleUserInfo(info.uid,userBattleID,info.roleID);
+                BattleUserInfo _bUser = new BattleUserInfo(info.uid,userBattleID);
                 bm.Add(_bUser);
                 userBattleID++;
             }
