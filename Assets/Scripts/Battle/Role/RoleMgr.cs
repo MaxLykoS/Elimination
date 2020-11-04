@@ -46,8 +46,8 @@ public class RoleMgr : MonoBehaviour
 
     void CreateRole(BattleUserInfo info, Transform transform)
     {
-        GameObject _playerPrefab = Resources.Load<GameObject>("Prefabs/Player");
-        roles.Add(new RoleBase(info.BattleID, Instantiate(_playerPrefab, transform.position,transform.rotation, playerRoot)));
+        GameObject _playerPrefab = Resources.Load<GameObject>("Prefabs/PlayerInstance");
+        roles.Add(new PlayerMovement(info.BattleID, Instantiate(_playerPrefab, transform.position,transform.rotation, playerRoot)));
         Debug.Log("创建角色" + info.BattleID);
     }
 
