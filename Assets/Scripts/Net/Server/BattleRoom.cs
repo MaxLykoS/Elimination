@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
-using TMPro.EditorUtilities;
 using UnityEngine;
 
 public class BattleRoom
